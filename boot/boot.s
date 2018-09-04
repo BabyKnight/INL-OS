@@ -1,7 +1,7 @@
 ;
 ;	boot.s
 ;
-; boot.s is loaded at 0x7c00 by the bios-startup routines, and moves itself
+; boot.s is loaded at 0x7c00 by the bios-startup routines
 
 ORG 0x7C00
 
