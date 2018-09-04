@@ -15,8 +15,7 @@ PrintMsg:
     cmp al, 0
     je exit
     call PrintCharacter
-    ret
-
+    jmp PrintMsg
 
 PrintCharacter:
     mov ah, 0x0e ;BIOS to print a charater on screen.
