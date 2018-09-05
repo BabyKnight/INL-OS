@@ -9,5 +9,8 @@ Image: boot/boot
 boot/boot: boot/boot.s
 	nasm boot/boot.s -f bin -o boot.img 	
 
+init/main.o: init/main.c
+
+
 clean:
 	rm boot.img
