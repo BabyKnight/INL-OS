@@ -11,6 +11,5 @@ boot/boot: boot/boot.s
 
 init/main.o: init/main.c
 
-
 clean:
 	rm boot.img
