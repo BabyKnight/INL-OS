@@ -1,5 +1,6 @@
 ;
 ;	boot.s
+;	Intel style Assembly language (Compiled by NASM)
 ;
 ; boot.s is loaded at 0x7c00 by the bios-startup routines
 
