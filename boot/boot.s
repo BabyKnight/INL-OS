@@ -1,8 +1,20 @@
 ;
-;	boot.s
+;	boot.s            (C) 2018 Vinent Hu
 ;	Intel style Assembly language (Compiled by NASM)
 ;
-; boot.s is loaded at 0x7c00 by the bios-startup routines
+; boot.s is loaded at 0x7c00 by the bios-startup routines, and moves
+; itself out of the way to address 0x90000, and jump there.
+;
+; It then loads 'setup' directly after itself (0x90200), and the system
+; at 0x10000, using BIOS interrupts.
+
+;SYSSIZE = 0x30000
+
+;BOOTSEG = 0x7c00
+;INITSEG = 0x90000
+;SETUPSEG = 0x90200
+;SYSSEG = 0x10000
+;ENDSEG = SYSSEG + SYSSIZE 
 
 org 0x7c00
 
