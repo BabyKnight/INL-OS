@@ -18,6 +18,19 @@
 
 org 0x7c00
 
+; move itself to 0x90000
+;mov ax, 0x7c00
+;mov ds, ax
+;mov ax, 0x90000
+;mov es, ax
+;mov cx, 256
+;sub si, si
+;sub di, di
+;rep
+;movw
+;jmpi go 0x90000
+
+; ok, print loading message
 mov si, msg
 call print_msg
 jmp $ ;Infinite loop, hang there.
