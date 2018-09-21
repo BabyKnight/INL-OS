@@ -1,6 +1,8 @@
-# OS I
+# OSX
 
-Simple Operating System
+Simple Operating System.
+
+X not only represent the UNKNOW, but also for eXploration (about Operating System development).
 
     Only support boot from floppy at the moment.
 
