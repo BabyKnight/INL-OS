@@ -1,5 +1,5 @@
 #
-# Makefile for OS I.
+# Makefile for July OS.
 #
 all:	Image
 
