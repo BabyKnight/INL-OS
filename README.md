@@ -1,57 +1,13 @@
-# July OS
+# INL OS
 
-Simple Operating System.
-This project is just a POC of simply OS development.
+Simple Operating System kernel for learning and fun.
 
-    July means everything started from `THAT` July.
+This project is just a POC of OS development after I have read most part of the Linux kernel 0.01 and 0.11.
 
-## Overview
+    INL: I'm Not Linus. But I learned a lot from his Linux.
 
-This Operation System is just a POC of simple OS development while learning OS.
+## Preface
 
+I was always wondering why not write an OS from scratch, since I've read so much OS code. Now here comes it!
 
-## Feature
-
-
-## Change Log
-
-
-## Roadmap
-
-* Preview (Sep. 2018)
-    * Support boot from floppy for Virtual Machine
-    * Support boot from USB device
-
-* Alpha (Aug. 2020)
-    * Support Load kernel
-
-* Beta (Oct. 2020)
-    * TBD
-
-* 1.0.0 (Dec. 2020)
-    * TBD
-
-* TBD
-
-## Dependencies
-
-
-## Architecture
-
-
-## Modules
-
-* Boot
-
-    * boot.s
-    
-        boot.s is loaded at 0x7c00 by the bios-startup routines.
-
-## Usage
-
-
-## Development
-
-
-## Summary
-
+It's more like Linux 0.11 and some piece of code may even copied from it. It is all because of standing on the shoulders of giants.
