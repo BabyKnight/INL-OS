@@ -45,5 +45,8 @@ int main(int argc, char **argv)
 		buf[510]=0x55;
 		buf[511]=0xAA;
 		i=write(1,buf,512);
+		fprintf(stderr, "i is %d\n", i); // debug
+		if (i != 512)
+				die("Boot block may not exceed 512 bytes");
 		close(fd);
 }
