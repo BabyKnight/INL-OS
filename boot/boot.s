@@ -26,6 +26,7 @@ begdata:
 begbss:
 .text
 
+SETUPLEN = 4                 ! len of setup-sectors, 4 sectors
 BOOTSEG  = 0x07c0            ! original address of boot sector
 INITSEG  = 0x9000            ! move bootsect here
 SETUPSEG = 0x9020            ! setup starts here
@@ -42,29 +43,70 @@ start:
 	sub si, si
 	sub di, di
 	rep
-	movw                ! move bootsect itself to address 0x90000  (256 * 2 Bytes)
-	jmpi go, INITSEG    ! jump to address 0x90000 and execute
+	movw                       ! move bootsect itself to address 0x90000  (256 * 2 Bytes)
+	jmpi go, INITSEG           ! jump to address 0x90000 and execute
 
 go:
 	mov ax, cs
 	mov ds, ax
 	mov es, ax
 	mov ss, ax
-	mov sp, #0xFF00     ! Top of the stack - ss:sp address is 0x9FF00
+	mov sp, #0xFF00            ! Top of the stack - ss:sp address is 0x9FF00
 
-	mov ah, #0x03       ! read cursor pos
+! load the setup-sectors directly
+
+load_setup:
+	mov dx, #0x0000            ! drive 0, head 0
+	mov cx, #0x0002            ! sector 2, track 0
+	mov bx, #0x0200            ! address = 512, int INITSEG
+	mov ax, #0x0200+SETUPLEN   ! - nr of sectors 
+	int 0x13                   ! read it
+	jnc ok_load_setup          ! load srtup complete, continue
+	mov dx, #0x0000
+	mov ax, #0x0000            ! reset the diskette
+	int 0x13
+	j load_setup
+
+ok_load_setup:
+
+	! get disk drive parameters
+	mov dl, #0x00
+	mov ax, #0x0800            ! AH=8 is get drive parameters
+	int 0x13
+	mov ch, #0x00
+	seg cs
+	mov sectors, cx
+	mov ax, #INITSEG
+	mov es, ax
+
+	! OK, we gonna print some message now
+	mov ah, #0x03             ! read cursor pos
 	xor bh, bh
 	int 0x10
 
+
+!
+
+	mov ax, cs
+	mov ds, ax
+	mov es, ax
+	mov dx, #1804
+
+!
+
+
 	mov cx, #24
-	mov bx, #0x0007
+	mov bx, #0x0007           ! page 0, attribute 7 (normal)
 	mov bp, #msg1
-	mov ax, #0x1301
+	mov ax, #0x1300           ! write string, move cursor
 	int 0x10
+
+sectors:
+	.word 0
 
 msg1:
 	.byte 13,10
-	.ascii "VNL OS  - Loading system ..."
+	.ascii "Loading system ..."
 	.byte 13,10,13,10
 
 ! times 510 - ($ - $$) db 0 ! Fill the rest of sector with 0

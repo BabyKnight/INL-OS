@@ -37,9 +37,15 @@ int main(int argc, char **argv)
 		if (argc != 4)
 				usage();
 
+		/* Initial buf with 0 */
+		for (i=0; i<sizeof buf; i++)
+				buf[i]=0;
+
 		/* Open bootsect file */
 		if((fd=open(argv[1], O_RDONLY)) == -1)
 				die("Unable to open 'boot'");
+
+		fprintf(stderr, "3 is %d\n4 is %d\n", buf[3], buf[4]);
 
 		i=read(fd, buf, sizeof buf);
 		buf[510]=0x55;
