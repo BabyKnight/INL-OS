@@ -39,6 +39,19 @@ start:
 	mov ds, ax
 	mov ax, #INITSEG
 	mov es, ax
+
+
+	mov ah, #0x03             ! read cursor pos
+	xor bh, bh                ! save the cursor pos to dx
+	int 0x10                  ! dh=row (0~24), dl=coloum (0~79)
+
+	mov cx, #34               ! totally 24 characters
+	mov bx, #0x0007           ! page 0, attribute 7 (normal)
+	mov bp, #msg1             ! es:bp point to the string to print
+	mov ax, #0x1301           ! write string, move cursor
+	int 0x10                  ! print the string and move cursor to the end
+
+
 	mov cx, #256
 	sub si, si
 	sub di, di
@@ -50,6 +63,17 @@ go:
 	mov ax, cs
 	mov ds, ax
 	mov es, ax
+
+	mov ah, #0x03             ! read cursor pos
+	xor bh, bh                ! save the cursor pos to dx
+	int 0x10                  ! dh=row (0~24), dl=coloum (0~79)
+
+	mov cx, #47               ! totally 24 characters
+	mov bx, #0x0007           ! page 0, attribute 7 (normal)
+	mov bp, #msg2             ! es:bp point to the string to print
+	mov ax, #0x1301           ! write string, move cursor
+	int 0x10                  ! print the string and move cursor to the end
+
 	mov ss, ax
 	mov sp, #0xFF00            ! Top of the stack - ss:sp address is 0x9FF00
 
@@ -77,40 +101,38 @@ ok_load_setup:
 	seg cs
 	mov sectors, cx
 	mov ax, #INITSEG
-	mov es, ax
+	mov es, ax                ! since es has been modified, reset to #INITSEG
 
 	! OK, we gonna print some message now
 	mov ah, #0x03             ! read cursor pos
-	xor bh, bh
-	int 0x10
+	xor bh, bh                ! save the cursor pos to dx
+	int 0x10                  ! dh=row (0~24), dl=coloum (0~79)
 
-
-!
-
-	mov ax, cs
-	mov ds, ax
-	mov es, ax
-	mov dx, #1804
-
-!
-
-
-	mov cx, #24
+	mov cx, #24               ! totally 24 characters
 	mov bx, #0x0007           ! page 0, attribute 7 (normal)
-	mov bp, #msg1
-	mov ax, #0x1300           ! write string, move cursor
-	int 0x10
+	mov bp, #msg1             ! es:bp point to the string to print
+	mov ax, #0x1301           ! write string, move cursor
+	int 0x10                  ! print the string and move cursor to the end
 
 sectors:
 	.word 0
 
+
 msg1:
+	.byte 13,10
+	.ascii "Loading bootsector at 0x7c00"
+	.byte 13,10,13,10
+
+msg2:
+	.byte 13,10
+	.ascii "Moving bootsector to 0x90000 and continue"
+	.byte 13,10,13,10
+
+msg3:
 	.byte 13,10
 	.ascii "Loading system ..."
 	.byte 13,10,13,10
 
-! times 510 - ($ - $$) db 0 ! Fill the rest of sector with 0
-! dw 0xaa55 !Add boot signature at the end of bootloader
 
 .org 510
 boot_flag:
