@@ -16,6 +16,8 @@
 #include <fcntl.h>
 
 
+#define MINIX_HEADER 32
+
 void die(char *str)
 {
 		fprintf(stderr, "%s\n", str);
@@ -45,14 +47,25 @@ int main(int argc, char **argv)
 		if((fd=open(argv[1], O_RDONLY)) == -1)
 				die("Unable to open 'boot'");
 
-		fprintf(stderr, "3 is %d\n4 is %d\n", buf[3], buf[4]);
+		if (read(fd,buf,MINIX_HEADER) != MINIX_HEADER)
+			die("Unable to read header of 'boot'");
 
 		i=read(fd, buf, sizeof buf);
-		buf[510]=0x55;
-		buf[511]=0xAA;
-		i=write(1,buf,512);
-		fprintf(stderr, "i is %d\n", i); // debug
+		fprintf(stderr, "Boot sector totally %d bytes.\n", i);
 		if (i != 512)
 				die("Boot block may not exceed 512 bytes");
+
+		fprintf(stderr, "boot flag at 510 is [%x], 511 is [%x]\n", buf[510], buf[511]);
+		if (buf[510] != 0x55 && buf[511] != 0xAA)
+				die("Boot flag not found");
+
+		i=write(1,buf,512);
+		fprintf(stderr, "Total length of boot sector is [%d]\n", i); // debug
+		if (i != 512)
+				die("Write call failed");
+
+		char filling_data[240*1024] = {0x00};
+		i=write(1,filling_data, 240*1024);
+
 		close(fd);
 }
