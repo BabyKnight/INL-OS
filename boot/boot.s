@@ -33,6 +33,11 @@ SETUPSEG = 0x9020            ! setup starts here
 SYSSEG   = 0x1000            ! system loaded at 0x10000 (65536)
 ENDSEG   = SYSSEG + SYSSIZE  ! where to stop loading
 
+! ROOT_DEV:  0x000 - same type of floopy as boot.
+!            0x301 - first partition on first drive etc
+!            0x306 - first partition on second drive etc
+ROOT_DEV = 0x000
+
 entry start
 start:
 	mov ax, #BOOTSEG
@@ -40,65 +45,64 @@ start:
 	mov ax, #INITSEG
 	mov es, ax
 
-
+	! TODO for debug purpose, will delete later
 	mov ah, #0x03             ! read cursor pos
 	xor bh, bh                ! save the cursor pos to dx
 	int 0x10                  ! dh=row (0~24), dl=coloum (0~79)
-
-	mov cx, #34               ! totally 24 characters
+	mov cx, #18               ! totally 18 characters
 	mov bx, #0x0007           ! page 0, attribute 7 (normal)
 	mov bp, #msg1             ! es:bp point to the string to print
 	mov ax, #0x1301           ! write string, move cursor
 	int 0x10                  ! print the string and move cursor to the end
-
+	!
 
 	mov cx, #256
 	sub si, si
 	sub di, di
 	rep
-	movw                       ! move bootsect itself to address 0x90000  (256 * 2 Bytes)
-	jmpi go, INITSEG           ! jump to address 0x90000 and execute
+	movw                      ! move bootsect itself to address 0x90000  (256 * 2 Bytes)
+	jmpi go, INITSEG          ! jump to address 0x90000 and execute
 
 go:
 	mov ax, cs
 	mov ds, ax
 	mov es, ax
 
+	! TODO for debug purpose, will delete later
 	mov ah, #0x03             ! read cursor pos
 	xor bh, bh                ! save the cursor pos to dx
 	int 0x10                  ! dh=row (0~24), dl=coloum (0~79)
-
-	mov cx, #47               ! totally 24 characters
+	mov cx, #30               ! totally 30 characters
 	mov bx, #0x0007           ! page 0, attribute 7 (normal)
 	mov bp, #msg2             ! es:bp point to the string to print
 	mov ax, #0x1301           ! write string, move cursor
 	int 0x10                  ! print the string and move cursor to the end
+	!
 
 	mov ss, ax
-	mov sp, #0xFF00            ! Top of the stack - ss:sp address is 0x9FF00
+	mov sp, #0xFF00           ! Top of the stack - ss:sp address is 0x9FF00
 
 ! load the setup-sectors directly
 
 load_setup:
-	mov dx, #0x0000            ! drive 0, head 0
-	mov cx, #0x0002            ! sector 2, track 0
-	mov bx, #0x0200            ! address = 512, int INITSEG
-	mov ax, #0x0200+SETUPLEN   ! - nr of sectors 
-	int 0x13                   ! read it
-	jnc ok_load_setup          ! load srtup complete, continue
-	mov dx, #0x0000
-	mov ax, #0x0000            ! reset the diskette
+	mov dx, #0x0000           ! drive 0, head 0
+	mov cx, #0x0002           ! sector 2, track 0, cl = start sectors (bit 0~5), drive number (bit 6~7)
+	mov bx, #0x0200           ! address = 512, int INITSEG
+	mov ax, #0x0200+SETUPLEN  ! - nr of sectors, al = number of sectors 
+	int 0x13                  ! read it
+	jnc ok_load_setup         ! load srtup complete, continue
+	mov dx, #0x0000           ! read on drive 0
+	mov ax, #0x0000           ! reset the diskette
 	int 0x13
 	j load_setup
 
 ok_load_setup:
-
 	! get disk drive parameters
-	mov dl, #0x00
-	mov ax, #0x0800            ! AH=8 is get drive parameters
+	mov dl, #0x00             ! DL = drive num, (to set bit 7 to 1 if it's hard drive)
+	mov ax, #0x0800           ! AH=8 is get drive parameters
 	int 0x13
 	mov ch, #0x00
-	seg cs
+	seg cs                    ! operand for next instruction store in CS
 	mov sectors, cx
 	mov ax, #INITSEG
 	mov es, ax                ! since es has been modified, reset to #INITSEG
@@ -110,23 +114,33 @@ ok_load_setup:
 
 	mov cx, #24               ! totally 24 characters
 	mov bx, #0x0007           ! page 0, attribute 7 (normal)
-	mov bp, #msg1             ! es:bp point to the string to print
+	mov bp, #msg3             ! es:bp point to the string to print
 	mov ax, #0x1301           ! write string, move cursor
 	int 0x10                  ! print the string and move cursor to the end
+
+	! Now, we want to load the system (at 0x10000)
+	mov ax,#SYSSEG
+	mov ex,ax
+	call read_it              ! read the system module from the disk
+	call kill_motor           ! stop the motor of drive, so that we can know the status of the drive
+
+
 
 sectors:
 	.word 0
 
 
-msg1:
+msg4:
+	.ascii "load setup done."
 	.byte 13,10
-	.ascii "Loading bootsector at 0x7c00"
-	.byte 13,10,13,10
+
+msg1:
+	.ascii "Bootsector found"
+	.byte 13,10
 
 msg2:
+	.ascii "Moving bootsector to 0x90000"
 	.byte 13,10
-	.ascii "Moving bootsector to 0x90000 and continue"
-	.byte 13,10,13,10
 
 msg3:
 	.byte 13,10
@@ -134,7 +148,10 @@ msg3:
 	.byte 13,10,13,10
 
 
-.org 510
+.org 508
+root_dev:
+	.word ROOT_DEV
+
 boot_flag:
 	.word 0xAA55
 
