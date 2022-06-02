@@ -121,8 +121,8 @@ ok_load_setup:
 	! Now, we want to load the system (at 0x10000)
 	mov ax,#SYSSEG
 	mov es,ax
-	call read_it              ! read the system module from the disk
-	call kill_motor           ! stop the motor of drive, so that we can know the status of the drive
+	!!call read_it              ! read the system module from the disk
+	!!call kill_motor           ! stop the motor of drive, so that we can know the status of the drive
 
 	! Check the root device to use. If the device is defined (!=0). nothing is done and the given device
 	! is used. Otherwise, either /dev/PS0 (2, 28) or /dev/at0 (2, 8), depending on the number of sectors
@@ -131,7 +131,7 @@ ok_load_setup:
 	mov ax, root_dev          ! check Byte 508 & 509 for root device whether is defined
 	cmp ax, #0
 	jne root_defined
-	
+
 	! sectors=15 means 1.2Mb drive, sectors=18 means 1.4Mb drive. Since it's bootable, should be A drive
 	seg cs
 	mov bx, sectors
@@ -150,8 +150,8 @@ root_defined:
 	mov root_dev, ax          ! move the checked device to root_dev
 
 	! everything is loaded, now jump to the SETUP at 0x90200
-	jmpi 0, SETUPSEG	
-	
+	jmpi 0, SETUPSEG
+
 
 
 read_it:
